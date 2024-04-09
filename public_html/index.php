@@ -5,11 +5,25 @@ function layout(string $layoutName) {
     $_SERVER['PAGE_LAYOUT'] = $layoutName;
 }
 
+function glob_recursive($pattern, $flags = 0) {
+    // The initial call to glob() gets the files matching the pattern in the current directory
+    $files = glob($pattern, $flags);
+
+    // glob() is then used to find all subdirectories in the current directory
+    foreach (glob(dirname($pattern) . '/*', GLOB_ONLYDIR | GLOB_NOSORT) as $dir) {
+        // Recursively call glob_recursive for each subdirectory
+        // This merges the files from the subdirectories into the main files array
+        $files = array_merge($files, glob_recursive($dir . '/' . basename($pattern), $flags));
+    }
+
+    return $files;
+}
+
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
-    $routeFiles = glob(__DIR__ . "/../route/*.php");
+    $routeFiles = glob_recursive(__DIR__ . "/../route/*.php");
 
     foreach($routeFiles as $routeFile) {
-        $routePattern = "/" . str_replace(".", "/", basename($routeFile, ".php"));
+        $routePattern = str_replace(".","/", str_replace(__DIR__ . "/../route", "", substr($routeFile, 0, -4)));
 
         $r->addRoute(['GET','POST'], $routePattern, function() use ($routeFile) {
             ob_start();
