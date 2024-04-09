@@ -1,5 +1,6 @@
 {
     "require": {
-        "nikic/fast-route": "^1.3"
+        "nikic/fast-route": "^1.3",
+        "illuminate/http": "^11.2"
     }
 }
