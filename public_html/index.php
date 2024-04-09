@@ -84,8 +84,17 @@ case FastRoute\Dispatcher::FOUND:
     $handler = $routeInfo[1];
     $routeParams = $routeInfo[2];
     $_SERVER['ROUTE_PARAMS'] = $routeParams;
-    $request = Request::capture();
-    $request->attributes->add($routeParams);
+    $request = new class($routeParams) {
+        private array $routeParams;
+
+        public function __construct(array $routeParams) {
+            $this->routeParams = $routeParams;
+        }
+
+        public function route(string $paramsName) {
+            return $this->routeParams[$paramsName];
+        }
+    };
     $handler($request);
     break;
 }
