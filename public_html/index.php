@@ -1,41 +1,24 @@
 <?php
 require __DIR__ . "/../vendor/autoload.php";
 
-function layout(string $layoutName) {
-    $_SERVER['PAGE_LAYOUT'] = $layoutName;
-}
+$helpers = [
+    'allroutepatterns',
+    'layout',
+    'request',
+    'response',
+];
 
-function response() {
-    return new class {
-        public function json(array $data) {
-            header('Content-Type: application/json');
-            echo json_encode($data);
-        }
-    };
-}
-
-function glob_recursive($pattern, $flags = 0) {
-    // The initial call to glob() gets the files matching the pattern in the current directory
-    $files = glob($pattern, $flags);
-
-    // glob() is then used to find all subdirectories in the current directory
-    foreach (glob(dirname($pattern) . '/*', GLOB_ONLYDIR | GLOB_NOSORT) as $dir) {
-        // Recursively call glob_recursive for each subdirectory
-        // This merges the files from the subdirectories into the main files array
-        $files = array_merge($files, glob_recursive($dir . '/' . basename($pattern), $flags));
-    }
-
-    return $files;
+foreach($helpers as $helper) {
+    require __DIR__ . "/../helper/$helper.php";
 }
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
-    $routeFiles = glob_recursive(__DIR__ . "/../route/*.php");
+    $routePatterns = allroutepatterns();
 
-    foreach($routeFiles as $routeFile) {
-        $routePattern = str_replace(".","/", str_replace(__DIR__ . "/../route", "", substr($routeFile, 0, -4)));
-
-        $r->addRoute(['GET','POST'], $routePattern, function($request) use ($routeFile) {
+    foreach($routePatterns as $routePattern) {
+        $r->addRoute(['GET','POST'], $routePattern, function($request) use ($routePattern) {
             ob_start();
+            $routeFile = __DIR__ . "/../route/" . str_replace("/", ".", substr($routePattern, 1)) . ".php";
             require $routeFile;
 
             //render the layout, if it is set
@@ -82,21 +65,7 @@ case FastRoute\Dispatcher::FOUND:
     $handler = $routeInfo[1];
     $routeParams = $routeInfo[2];
     $_SERVER['ROUTE_PARAMS'] = $routeParams;
-    $request = new class($routeParams) {
-        private array $routeParams;
-
-        public function __construct(array $routeParams) {
-            $this->routeParams = $routeParams;
-        }
-
-        public function route(string $paramsName) {
-            return $this->routeParams[$paramsName];
-        }
-
-        public function method() {
-            return $_SERVER['REQUEST_METHOD'];
-        }
-    };
+    $request = request($routeParams);
     $handler($request);
     break;
 }
