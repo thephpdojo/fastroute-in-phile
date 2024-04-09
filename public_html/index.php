@@ -1,6 +1,8 @@
 <?php
 require __DIR__ . "/../vendor/autoload.php";
 
+use Illuminate\Http\Request;
+
 function layout(string $layoutName) {
     $_SERVER['PAGE_LAYOUT'] = $layoutName;
 }
@@ -25,7 +27,7 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     foreach($routeFiles as $routeFile) {
         $routePattern = str_replace(".","/", str_replace(__DIR__ . "/../route", "", substr($routeFile, 0, -4)));
 
-        $r->addRoute(['GET','POST'], $routePattern, function() use ($routeFile) {
+        $r->addRoute(['GET','POST'], $routePattern, function($request) use ($routeFile) {
             ob_start();
             require $routeFile;
 
@@ -73,6 +75,8 @@ case FastRoute\Dispatcher::FOUND:
     $handler = $routeInfo[1];
     $routeParams = $routeInfo[2];
     $_SERVER['ROUTE_PARAMS'] = $routeParams;
-    $handler();
+    $request = Request::capture();
+    $request->attributes->add($routeParams);
+    $handler($request);
     break;
 }

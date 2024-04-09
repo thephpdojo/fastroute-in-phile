@@ -1,2 +1,2 @@
 <?php
-echo "user id: " . $_SERVER['ROUTE_PARAMS']['id'];
+echo "user id: " . $request->attributes->get('id');
