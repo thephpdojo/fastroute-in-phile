@@ -1,8 +1,6 @@
 <?php
 require __DIR__ . "/../vendor/autoload.php";
 
-use Illuminate\Http\Request;
-
 function layout(string $layoutName) {
     $_SERVER['PAGE_LAYOUT'] = $layoutName;
 }
