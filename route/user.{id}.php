@@ -1,2 +1,4 @@
 <?php
-echo "user id: " . $request->attributes->get('id');
+response()->json([
+    'user_id' => $request->attributes->get('id')
+]);

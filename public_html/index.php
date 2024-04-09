@@ -7,6 +7,15 @@ function layout(string $layoutName) {
     $_SERVER['PAGE_LAYOUT'] = $layoutName;
 }
 
+function response() {
+    return new class {
+        public function json(array $data) {
+            header('Content-Type: application/json');
+            echo json_encode($data);
+        }
+    };
+}
+
 function glob_recursive($pattern, $flags = 0) {
     // The initial call to glob() gets the files matching the pattern in the current directory
     $files = glob($pattern, $flags);
