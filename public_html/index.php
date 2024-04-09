@@ -94,6 +94,10 @@ case FastRoute\Dispatcher::FOUND:
         public function route(string $paramsName) {
             return $this->routeParams[$paramsName];
         }
+
+        public function method() {
+            return $_SERVER['REQUEST_METHOD'];
+        }
     };
     $handler($request);
     break;
