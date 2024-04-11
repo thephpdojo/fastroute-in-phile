@@ -1,6 +1,10 @@
 <?php
 require __DIR__ . "/../vendor/autoload.php";
 
+function helper(string $helper) {
+    require_once __DIR__ . "/../helper/$helper.php";
+}
+
 $helpers = [
     'allroutepatterns',
     'layout',
@@ -10,7 +14,7 @@ $helpers = [
 ];
 
 foreach($helpers as $helper) {
-    require __DIR__ . "/../helper/$helper.php";
+    helper($helper);
 }
 
 bootstrap();
